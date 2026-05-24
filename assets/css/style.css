@@ -487,7 +487,7 @@ button {
 .about-panel h3,
 .project-card h3,
 .event-card h3,
-.team-card h3 {
+.committee-card h3 {
     margin: 0;
     color: var(--text);
     font-family: "Space Grotesk", sans-serif;
@@ -686,19 +686,19 @@ button {
     text-transform: uppercase;
 }
 
-.team-grid {
+.committee-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
     margin-top: 48px;
 }
 
-.team-card {
+.committee-card {
     border-top: 1px solid var(--line-strong);
     padding-top: 24px;
 }
 
-.team-photo {
+.committee-photo {
     width: 100%;
     aspect-ratio: 1 / 1;
     margin-bottom: 24px;
@@ -707,18 +707,18 @@ button {
     overflow: hidden;
 }
 
-.team-photo img {
+.committee-photo img {
     width: 100%;
     height: 100%;
     display: block;
     object-fit: cover;
 }
 
-.team-card h3 {
+.committee-card h3 {
     font-size: 1.35rem;
 }
 
-.team-role {
+.committee-role {
     margin: 8px 0 14px;
     color: var(--accent);
     font-family: "Space Grotesk", sans-serif;
@@ -726,13 +726,6 @@ button {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-}
-
-.team-card p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.94rem;
-    line-height: 1.65;
 }
 
 .site-footer {
@@ -813,7 +806,7 @@ button {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .team-grid {
+    .committee-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 28px 18px;
     }
@@ -928,7 +921,7 @@ button {
         line-height: 1.7;
     }
 
-    .team-grid {
+    .committee-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -1046,3 +1039,4 @@ button {
         gap: 18px;
     }
 }
+

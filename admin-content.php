@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $type = $_POST['type'] ?? '';
 $action = $_POST['action'] ?? '';
 $id = (int) ($_POST['id'] ?? 0);
-$allowed_types = ['event', 'project', 'team'];
+$allowed_types = ['event', 'project', 'committee'];
 $allowed_actions = ['save', 'delete'];
 
 if (!in_array($type, $allowed_types, true) || !in_array($action, $allowed_actions, true)) {
@@ -35,7 +35,8 @@ if (!in_array($type, $allowed_types, true) || !in_array($action, $allowed_action
     exit;
 }
 
-function execute_or_redirect(PDOStatement $stmt, array $payload, $location) {
+function execute_or_redirect(PDOStatement $stmt, array $payload, $location)
+{
     try {
         $stmt->execute($payload);
     } catch (PDOException $e) {
@@ -52,11 +53,16 @@ if ($action === 'delete' && $id > 0) {
     $tables = [
         'event' => 'events',
         'project' => 'projects',
-        'team' => 'team_members',
+        'committee' => 'committee',
+    ];
+    $redirects = [
+        'event' => 'admin-dashboard.php#events',
+        'project' => 'admin-dashboard.php#projects',
+        'committee' => 'admin-dashboard.php#committee',
     ];
 
     $stmt = $pdo->prepare("DELETE FROM {$tables[$type]} WHERE id = :id");
-    execute_or_redirect($stmt, [':id' => $id], 'admin-dashboard.php#' . $type . 's');
+    execute_or_redirect($stmt, [':id' => $id], $redirects[$type]);
 }
 
 if ($type === 'event') {
@@ -129,12 +135,12 @@ if ($type === 'project') {
 
 $photo_path = trim($_POST['photo_path'] ?? '');
 try {
-    $uploaded_photo = save_uploaded_image('team_image', 'team');
+    $uploaded_photo = save_uploaded_image('committee_image', 'committee');
     if ($uploaded_photo !== null) {
         $photo_path = $uploaded_photo;
     }
 } catch (RuntimeException $e) {
-    header('Location: admin-dashboard.php#teams');
+    header('Location: admin-dashboard.php#committee');
     exit;
 }
 
@@ -142,7 +148,6 @@ $payload = [
     ':name' => trim($_POST['name'] ?? ''),
     ':role' => trim($_POST['role'] ?? ''),
     ':photo_path' => $photo_path,
-    ':bio' => trim($_POST['bio'] ?? ''),
     ':sort_order' => (int) ($_POST['sort_order'] ?? 0),
 ];
 
@@ -150,19 +155,21 @@ if ($payload[':name'] !== '' && $payload[':role'] !== '') {
     if ($id > 0) {
         $payload[':id'] = $id;
         $stmt = $pdo->prepare(
-            'UPDATE team_members
-             SET name = :name, role = :role, photo_path = :photo_path, bio = :bio,
+            'UPDATE committee
+             SET name = :name, role = :role, photo_path = :photo_path,
                  sort_order = :sort_order
              WHERE id = :id'
         );
     } else {
         $stmt = $pdo->prepare(
-            'INSERT INTO team_members (name, role, photo_path, bio, sort_order)
-             VALUES (:name, :role, :photo_path, :bio, :sort_order)'
+            'INSERT INTO committee (name, role, photo_path, sort_order)
+             VALUES (:name, :role, :photo_path, :sort_order)'
         );
     }
-    execute_or_redirect($stmt, $payload, 'admin-dashboard.php#teams');
+    execute_or_redirect($stmt, $payload, 'admin-dashboard.php#committee');
 }
 
-header('Location: admin-dashboard.php#teams');
+header('Location: admin-dashboard.php#committee');
 exit;
+
+

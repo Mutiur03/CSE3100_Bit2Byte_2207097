@@ -1,4 +1,19 @@
 const modals = document.querySelectorAll(".admin-modal");
+const avatarPlaceholder = "https://placehold.net/avatar.svg";
+
+const showImageFallback = (image) => {
+    if (!image || image.src === avatarPlaceholder) return;
+    image.onerror = null;
+    image.src = avatarPlaceholder;
+    image.hidden = false;
+};
+
+document.querySelectorAll(".admin-thumb, .preview-image, #committee-current-image, #member-preview-photo").forEach((image) => {
+    image.addEventListener("error", () => showImageFallback(image));
+    if (image.complete && image.naturalWidth === 0) {
+        showImageFallback(image);
+    }
+});
 
 const openModal = (id) => {
     const modal = document.getElementById(id);
@@ -62,31 +77,31 @@ document.querySelectorAll("[data-open-project-modal]").forEach((button) => {
     });
 });
 
-document.querySelectorAll("[data-open-team-modal]").forEach((button) => {
+document.querySelectorAll("[data-open-committee-modal]").forEach((button) => {
     button.addEventListener("click", () => {
-        const form = document.querySelector("#team-modal form");
-        const imageWrap = document.getElementById("team-current-image-wrap");
-        const image = document.getElementById("team-current-image");
+        const form = document.querySelector("#committee-modal form");
+        const imageWrap = document.getElementById("committee-current-image-wrap");
+        const image = document.getElementById("committee-current-image");
         form.reset();
         setValue(form, "id", button.dataset.id || "");
         setValue(form, "name", button.dataset.name || "");
         setValue(form, "role", button.dataset.role || "");
-        setValue(form, "photo_path", button.dataset.photoPath || "");
-        setValue(form, "bio", button.dataset.bio || "");
+        setValue(form, "photo_path", button.dataset.photoPath || avatarPlaceholder);
         setValue(form, "sort_order", button.dataset.sortOrder || "0");
-        document.getElementById("team-modal-title").textContent = button.dataset.mode === "add" ? "Add Team Member" : "Edit Team Member";
-        image.src = button.dataset.photoPath || "";
-        imageWrap.hidden = !button.dataset.photoPath;
-        openModal("team-modal");
+        document.getElementById("committee-modal-title").textContent = button.dataset.mode === "add" ? "Add Committee Member" : "Edit Committee Member";
+        image.onerror = () => showImageFallback(image);
+        image.src = button.dataset.photoPath || avatarPlaceholder;
+        imageWrap.hidden = false;
+        openModal("committee-modal");
     });
 });
 
-const teamImageInput = document.querySelector("#team-modal input[name='team_image']");
-teamImageInput.addEventListener("change", () => {
-    const file = teamImageInput.files[0];
+const committeeImageInput = document.querySelector("#committee-modal input[name='committee_image']");
+committeeImageInput.addEventListener("change", () => {
+    const file = committeeImageInput.files[0];
     if (!file) return;
-    const imageWrap = document.getElementById("team-current-image-wrap");
-    const image = document.getElementById("team-current-image");
+    const imageWrap = document.getElementById("committee-current-image-wrap");
+    const image = document.getElementById("committee-current-image");
     image.src = URL.createObjectURL(file);
     imageWrap.hidden = false;
 });
@@ -98,9 +113,10 @@ document.querySelectorAll("[data-open-preview]").forEach((button) => {
         document.getElementById("preview-description").textContent = button.dataset.description || "";
         document.getElementById("preview-meta").textContent = button.dataset.meta || "";
         const previewImage = document.getElementById("preview-image");
-        previewImage.src = button.dataset.image || "";
+        previewImage.onerror = () => showImageFallback(previewImage);
+        previewImage.src = button.dataset.image || avatarPlaceholder;
         previewImage.alt = button.dataset.title || "";
-        previewImage.hidden = !button.dataset.image;
+        previewImage.hidden = false;
         openModal("preview-modal");
     });
 });
@@ -126,6 +142,7 @@ document.querySelectorAll("[data-open-member-preview]").forEach((button) => {
         document.getElementById("member-preview-reason").textContent = button.dataset.reason || "Not provided";
 
         if (button.dataset.photo) {
+            photo.onerror = () => showImageFallback(photo);
             photo.src = button.dataset.photo;
             photo.alt = name;
             photo.hidden = false;
@@ -152,7 +169,7 @@ document.querySelectorAll("[data-open-delete]").forEach((button) => {
 
 const tabTargets = document.querySelectorAll("[data-admin-tab-target]");
 const tabPanels = document.querySelectorAll("[data-admin-panel]");
-const validTabs = ["members", "events", "projects", "teams"];
+const validTabs = ["members", "events", "projects", "committee"];
 
 const showTab = (target, updateHash = true) => {
     const nextTarget = validTabs.includes(target) ? target : "members";
@@ -178,3 +195,4 @@ tabTargets.forEach((tab) => {
 });
 
 showTab(window.location.hash.replace("#", ""), false);
+

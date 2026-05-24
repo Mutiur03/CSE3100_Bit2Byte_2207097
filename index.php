@@ -19,7 +19,8 @@ require_once __DIR__ . '/content-data.php';
 // seed_all_data($pdo);
 $events = all_events($pdo);
 $projects = all_projects($pdo);
-$team_members = all_team_members($pdo);
+$committee_members = array_slice(all_committee_members($pdo), 0, 4);
+$avatar_placeholder = 'assets/avatar.jpg';
 ?>
 <!doctype html>
 
@@ -51,7 +52,7 @@ $team_members = all_team_members($pdo);
           <a class="nav-link-hover" href="#about">About</a>
           <a class="nav-link-hover" href="#events">Events</a>
           <a class="nav-link-hover" href="#projects">Projects</a>
-          <a class="nav-link-hover" href="#team">Team</a>
+          <a class="nav-link-hover" href="#committee">Committee</a>
         </div>
         <a href="login.php" class="join-link">
           JOIN_SYSTEM
@@ -231,27 +232,24 @@ $team_members = all_team_members($pdo);
           </div>
         </div>
       </section>
-      <section class="site-section site-section--muted" id="team">
+      <section class="site-section site-section--muted" id="committee">
         <div class="section-inner">
-          <span class="section-kicker">Team</span>
+          <span class="section-kicker">Committee</span>
           <h2 class="section-title">People who keep the club moving.</h2>
           <p class="section-lede">
-            The organizing team plans learning programs, reviews member work,
+            The organizing committee plans learning programs, reviews member work,
             coordinates events, and keeps the club welcoming for students at
             every stage.
           </p>
 
-          <div class="team-grid">
-            <?php foreach ($team_members as $team_member): ?>
-              <article class="team-card">
-                <?php if ($team_member['photo_path']): ?>
-                  <div class="team-photo">
-                    <img src="<?= e($team_member['photo_path']) ?>" alt="<?= e($team_member['name']) ?>" />
-                  </div>
-                <?php endif; ?>
-                <h3><?= e($team_member['name']) ?></h3>
-                <div class="team-role"><?= e($team_member['role']) ?></div>
-                <p><?= e($team_member['bio']) ?></p>
+          <div class="committee-grid">
+            <?php foreach ($committee_members as $committee_member): ?>
+              <article class="committee-card">
+                <div class="committee-photo">
+                  <img src="<?= e($committee_member['photo_path'] ?: $avatar_placeholder) ?>" alt="<?= e($committee_member['name']) ?>" onerror="this.onerror=null;this.src='<?= e($avatar_placeholder) ?>';" />
+                </div>
+                <h3><?= e($committee_member['name']) ?></h3>
+                <div class="committee-role"><?= e($committee_member['role']) ?></div>
               </article>
             <?php endforeach; ?>
           </div>
@@ -306,3 +304,5 @@ $team_members = all_team_members($pdo);
     </script>
   </body>
 </html>
+
+

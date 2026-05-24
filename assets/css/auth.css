@@ -179,6 +179,16 @@ main {
   gap: 2rem;
 }
 
+.form-message {
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(var(--primary-rgb), 0.25);
+  background: rgba(var(--primary-rgb), 0.08);
+  color: var(--primary);
+  padding: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

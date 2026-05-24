@@ -1,6 +1,14 @@
 <?php
 
-function save_uploaded_image(string $field_name, string $folder): ?string {
+function upload_filename_slug(string $value): string {
+    $value = strtolower(trim($value));
+    $value = preg_replace('/[^a-z0-9]+/', '-', $value);
+    $value = trim((string) $value, '-');
+
+    return $value !== '' ? $value : bin2hex(random_bytes(8));
+}
+
+function save_uploaded_image(string $field_name, string $folder, ?string $preferred_name = null): ?string {
     if (empty($_FILES[$field_name]) || ($_FILES[$field_name]['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
         return null;
     }
@@ -35,8 +43,17 @@ function save_uploaded_image(string $field_name, string $folder): ?string {
         throw new RuntimeException('Upload folder could not be created.');
     }
 
-    $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$info[2]];
+    $base_name = $preferred_name !== null && trim($preferred_name) !== ''
+        ? upload_filename_slug($preferred_name)
+        : bin2hex(random_bytes(16));
+    $filename = $base_name . '.' . $extensions[$info[2]];
     $target = $upload_dir . '/' . $filename;
+    $counter = 2;
+    while (is_file($target)) {
+        $filename = $base_name . '-' . $counter . '.' . $extensions[$info[2]];
+        $target = $upload_dir . '/' . $filename;
+        $counter++;
+    }
 
     if (!move_uploaded_file($tmp_path, $target)) {
         throw new RuntimeException('Image could not be saved.');

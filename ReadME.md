@@ -1,6 +1,6 @@
 # Bit2Byte
 
-Bit2Byte is a PHP and MySQL club website with an admin panel for managing member applications, events, projects, and team members.
+Bit2Byte is a PHP and MySQL club website with an admin panel for managing member applications, events, projects, and committee members.
 
 ## Requirements
 
@@ -50,7 +50,7 @@ The seed command adds data only when the target table is empty:
 - admin account from `.env`
 - sample events
 - sample projects
-- sample team members
+- sample committee members
 
 ## Optional Automatic Setup
 
@@ -106,7 +106,7 @@ Uploaded images are stored in:
 
 ```text
 uploads/members
-uploads/team
+uploads/committee
 ```
 
 The `uploads/.htaccess` file disables PHP execution inside uploads for safety.
@@ -116,7 +116,7 @@ The `uploads/.htaccess` file disables PHP execution inside uploads for safety.
 - `index.php` - public homepage
 - `login.php` - admin login
 - `admin-dashboard.php` - admin panel UI
-- `admin-content.php` - event, project, and team create/update/delete handler
+- `admin-content.php` - event, project, and committee create/update/delete handler
 - `member-status.php` - approve or reject member applications
 - `signup.php` - member registration handler
 - `schema.sql` - database tables
@@ -130,3 +130,4 @@ The `uploads/.htaccess` file disables PHP execution inside uploads for safety.
 - Normal page loads should not create tables or seed data.
 - Keep `.env` private and do not commit it.
 - If admin login still works after changing tables, clear session by logging out or deleting localhost cookies.
+
