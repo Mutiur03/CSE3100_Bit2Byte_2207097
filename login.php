@@ -1,10 +1,9 @@
 <?php
 require_once __DIR__ . '/db.php';
 
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
-header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 function redirect_with_message($url, $message) {
     header('Location: ' . $url . '?message=' . urlencode($message));
@@ -32,14 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare('SELECT id, name, email, password_hash FROM admins WHERE email = :email LIMIT 1');
-        $stmt->execute([':email' => $email]);
+        $stmt = $pdo->prepare('SELECT id, name, email, password_hash FROM admins WHERE email = ? LIMIT 1');
+        $stmt->execute([$email]);
         $admin = $stmt->fetch();
     } catch (PDOException $e) {
         if (!is_missing_table_error($e)) {
             throw $e;
         }
-
         redirect_with_message('login.php', 'Database tables are missing. Run setup first.');
     }
 
