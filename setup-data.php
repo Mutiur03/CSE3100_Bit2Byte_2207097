@@ -12,11 +12,6 @@ function run_schema_file(PDO $pdo)
     $messages = [];
 
     foreach ($statements as $statement) {
-        $upper = strtoupper($statement);
-        if (str_starts_with($upper, 'CREATE DATABASE') || str_starts_with($upper, 'USE ')) {
-            continue;
-        }
-
         $pdo->exec($statement);
     }
 
