@@ -97,14 +97,17 @@ document.querySelectorAll("[data-open-committee-modal]").forEach((button) => {
 });
 
 const committeeImageInput = document.querySelector("#committee-modal input[name='committee_image']");
-committeeImageInput.addEventListener("change", () => {
-    const file = committeeImageInput.files[0];
-    if (!file) return;
-    const imageWrap = document.getElementById("committee-current-image-wrap");
-    const image = document.getElementById("committee-current-image");
-    image.src = URL.createObjectURL(file);
-    imageWrap.hidden = false;
-});
+if (committeeImageInput) {
+    committeeImageInput.addEventListener("change", () => {
+        const file = committeeImageInput.files[0];
+        if (!file) return;
+        const imageWrap = document.getElementById("committee-current-image-wrap");
+        const image = document.getElementById("committee-current-image");
+        if (!imageWrap || !image) return;
+        image.src = URL.createObjectURL(file);
+        imageWrap.hidden = false;
+    });
+}
 
 document.querySelectorAll("[data-open-preview]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -167,9 +170,29 @@ document.querySelectorAll("[data-open-delete]").forEach((button) => {
     });
 });
 
+const adminPasswordInput = document.querySelector('form[action="admin-content.php"] input[name="password"]');
+const generateAdminPasswordButton = document.querySelector("[data-generate-admin-password]");
+
+const generateStrongPassword = (length = 12) => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?";
+    const randomBytes = new Uint32Array(length);
+    window.crypto.getRandomValues(randomBytes);
+    return Array.from(randomBytes, (n) => chars[n % chars.length]).join("");
+};
+
+if (adminPasswordInput && generateAdminPasswordButton) {
+    generateAdminPasswordButton.addEventListener("click", () => {
+        const generated = generateStrongPassword();
+        adminPasswordInput.type = "text";
+        adminPasswordInput.value = generated;
+        adminPasswordInput.focus();
+        adminPasswordInput.select();
+    });
+}
+
 const tabTargets = document.querySelectorAll("[data-admin-tab-target]");
 const tabPanels = document.querySelectorAll("[data-admin-panel]");
-const validTabs = ["members", "events", "projects", "committee"];
+const validTabs = ["members", "events", "projects", "committee", "admins"];
 
 const showTab = (target, updateHash = true) => {
     const nextTarget = validTabs.includes(target) ? target : "members";
@@ -194,5 +217,10 @@ tabTargets.forEach((tab) => {
     });
 });
 
-showTab(window.location.hash.replace("#", ""), false);
+const readHashTab = () => window.location.hash.replace("#", "").trim().toLowerCase();
+showTab(readHashTab(), false);
+
+window.addEventListener("hashchange", () => {
+    showTab(readHashTab(), false);
+});
 

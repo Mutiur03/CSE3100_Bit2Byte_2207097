@@ -66,7 +66,7 @@ body.admin-page {
 
 .admin-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.75rem;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -438,10 +438,22 @@ body.admin-page {
   padding: 1.25rem;
 }
 
+.admin-inline-form {
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
 .admin-modal-form label {
   display: grid;
   gap: 0.35rem;
   font-weight: 600;
+}
+
+.password-generate-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .admin-modal-panel > .admin-section-subtitle,

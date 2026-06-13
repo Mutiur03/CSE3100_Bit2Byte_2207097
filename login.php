@@ -26,14 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect_with_message('login.php', 'Email and password required.');
     }
 
-    try {
-        $stmt = $pdo->prepare('SELECT id, name, email, password_hash FROM admins WHERE email = ? LIMIT 1');
-        $stmt->execute([$email]);
-        $admin = $stmt->fetch();
-    } catch (PDOException $e) {
-        if (!is_missing_table_error($e)) {
-            throw $e;
-        }
+    $admin = find_active_admin_by_email($pdo, $email);
+    if ($admin === null) {
         redirect_with_message('login.php', 'Database tables are missing. Run setup first.');
     }
 

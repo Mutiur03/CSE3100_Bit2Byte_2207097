@@ -18,9 +18,9 @@ bootstrap_admin_session($pdo);
 | run_schema_file($pdo);
 | seed_all_data($pdo);
 */
-// require_once __DIR__ . '/setup-data.php';
-// run_schema_file($pdo);
-// seed_all_data($pdo);
+require_once __DIR__ . '/setup-data.php';
+run_schema_file($pdo);
+seed_all_data($pdo);
 $events = all_events($pdo);
 $projects = all_projects($pdo);
 $committee_members = array_slice(all_committee_members($pdo), 0, 4);
@@ -245,13 +245,21 @@ $avatar_placeholder = 'assets/avatar.jpg';
       </section>
       <section class="site-section site-section--muted" id="committee">
         <div class="section-inner">
-          <span class="section-kicker">Committee</span>
-          <h2 class="section-title">People who keep the club moving.</h2>
-          <p class="section-lede">
-            The organizing committee plans learning programs, reviews member work,
-            coordinates events, and keeps the club welcoming for students at
-            every stage.
-          </p>
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">Committee</span>
+              <h2 class="section-title">People who keep the club moving.</h2>
+              <p class="section-lede">
+                The organizing committee plans learning programs, reviews member work,
+                coordinates events, and keeps the club welcoming for students at
+                every stage.
+              </p>
+            </div>
+            <a class="section-action" href="committee-list.php">
+              Show all
+              <span class="material-symbols-outlined">arrow_right_alt</span>
+            </a>
+          </div>
 
           <div class="committee-grid">
             <?php foreach ($committee_members as $committee_member): ?>

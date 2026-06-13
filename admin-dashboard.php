@@ -24,11 +24,16 @@ usort($members, fn($a, $b) => ($status_order[strtolower($a['status'] ?? '')] ?? 
 $events = all_events($pdo);
 $projects = all_projects($pdo);
 $committee_members = all_committee_members($pdo);
+$admin_accounts = all_admin_accounts($pdo);
 
 $pending_members = count(array_filter($members, fn($member) => $member['status'] === 'pending'));
 $approved_members = count(array_filter($members, fn($member) => $member['status'] === 'approved'));
 $rejected_members = count(array_filter($members, fn($member) => $member['status'] === 'rejected'));
 $total_members = count($members);
+$active_admins = count(array_filter($admin_accounts, fn($admin) => (int) ($admin['is_active'] ?? 0) === 1));
+$flash_message = trim($_GET['message'] ?? '');
+$flash_error = trim($_GET['error'] ?? '');
+$debug_mode = env_value('APP_DEBUG', '0') === '1';
 $avatar_placeholder = 'https://placehold.net/avatar.svg';
 
 function status_class($status)
@@ -78,6 +83,16 @@ function status_class($status)
           </a>
         </div>
       </div>
+      <?php if ($flash_message !== ''): ?>
+        <div class="alert alert-warning mb-3" role="alert">
+          <?= e($flash_message) ?>
+        </div>
+      <?php endif; ?>
+      <?php if ($debug_mode && $flash_error !== ''): ?>
+        <div class="alert alert-danger mb-3" role="alert">
+          <strong>Debug Error:</strong> <code><?= e($flash_error) ?></code>
+        </div>
+      <?php endif; ?>
       <!-- Summary -->
       <div class="admin-summary-grid">
         <a class="admin-summary-card" href="#members" data-admin-tab-target="members">
@@ -103,6 +118,11 @@ function status_class($status)
           <strong><?= e(count($committee_members)) ?></strong>
           <small>Total records</small>
         </a>
+        <a class="admin-summary-card" href="#admins" data-admin-tab-target="admins">
+          <span>Admins</span>
+          <strong><?= e(count($admin_accounts)) ?></strong>
+          <small><?= e($active_admins) ?> active</small>
+        </a>
       </div>
       <!-- Tabs -->
       <div class="tabs dashboard-tabs d-flex flex-wrap mb-4">
@@ -110,6 +130,7 @@ function status_class($status)
         <a href="#events" class="tab-btn" data-admin-tab-target="events">Events</a>
         <a href="#projects" class="tab-btn" data-admin-tab-target="projects">Projects</a>
         <a href="#committee" class="tab-btn" data-admin-tab-target="committee">Committee</a>
+        <a href="#admins" class="tab-btn" data-admin-tab-target="admins">Admins</a>
       </div>
       <!-- Members Tab -->
       <section id="members" class="admin-section admin-tab-panel is-active" data-admin-panel="members">
@@ -340,6 +361,110 @@ function status_class($status)
                         data-sort-order="<?= e($committee_member['sort_order']) ?>">Edit</button>
                       <button class="btn btn-sm btn-outline-danger" type="button" data-open-delete data-type="committee"
                         data-id="<?= e($committee_member['id']) ?>" data-title="<?= e($committee_member['name']) ?>">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section id="admins" class="admin-section admin-tab-panel" data-admin-panel="admins">
+        <div class="admin-section-heading">
+          <div>
+            <h2 class="admin-section-title">Admin Access</h2>
+            <p class="admin-section-subtitle">Assign committee members as admins and revoke access when needed.</p>
+          </div>
+          <span class="status-pill"><?= e($active_admins) ?> Active</span>
+        </div>
+
+        <form class="admin-modal-form admin-inline-form" action="admin-content.php" method="post">
+          <input type="hidden" name="type" value="admin" />
+          <input type="hidden" name="action" value="save" />
+          <div class="admin-form-grid">
+            <label>
+              Committee Member
+              <select class="form-input" name="committee_id" required>
+                <option value="">Select committee member</option>
+                <?php foreach ($committee_members as $committee_member): ?>
+                  <option value="<?= e($committee_member['id']) ?>">
+                    <?= e($committee_member['name']) ?> (<?= e($committee_member['role']) ?>)
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </label>
+            <label>Email<input class="form-input" name="email" type="email" required /></label>
+            <label>
+              Password
+              <div class="password-generate-row">
+                <input class="form-input" name="password" type="password" minlength="6" required />
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-generate-admin-password>Auto Generate</button>
+              </div>
+            </label>
+          </div>
+          <div class="modal-actions pt-0 border-0">
+            <button class="btn btn-primary" type="submit">Grant / Update Access</button>
+          </div>
+        </form>
+
+        <div class="management-table-wrap">
+          <table class="table table-hover align-middle mb-0 management-table">
+            <thead>
+              <tr>
+                <th>Admin</th>
+                <th>Linked Committee Role</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($admin_accounts as $admin_account): ?>
+                <tr>
+                  <td data-label="Admin">
+                    <strong><?= e($admin_account['name']) ?></strong>
+                    <small><?= e($admin_account['email']) ?></small>
+                  </td>
+                  <td data-label="Linked Committee Role">
+                    <?php if (!empty($admin_account['committee_name'])): ?>
+                      <?= e($admin_account['committee_name']) ?><br />
+                      <small><?= e($admin_account['committee_role']) ?></small>
+                    <?php else: ?>
+                      <small>Direct admin account</small>
+                    <?php endif; ?>
+                  </td>
+                  <td data-label="Status">
+                    <span class="<?= e((int) $admin_account['is_active'] === 1 ? 'status-pill status-pill-success' : 'status-pill status-pill-danger') ?>">
+                      <?= e((int) $admin_account['is_active'] === 1 ? 'Active' : 'Revoked') ?>
+                    </span>
+                  </td>
+                  <td data-label="Created">
+                    <small><?= e(date('F j, Y, g:i a', strtotime($admin_account['created_at']))) ?></small>
+                  </td>
+                  <td data-label="Actions">
+                    <div class="row-actions">
+                      <button class="btn btn-sm btn-outline-info" type="button" data-open-preview
+                        data-title="<?= e($admin_account['name']) ?>"
+                        data-kicker="<?= e((int) $admin_account['is_active'] === 1 ? 'Active Admin' : 'Revoked Admin') ?>"
+                        data-description="<?= e('Email: ' . $admin_account['email']) ?>"
+                        data-meta="<?= e(!empty($admin_account['committee_name']) ? ($admin_account['committee_name'] . ' | ' . $admin_account['committee_role']) : 'Direct admin account') ?>">Preview</button>
+                      <?php if ((int) $admin_account['id'] === (int) $_SESSION['admin_id']): ?>
+                        <span class="status-pill status-pill-info">Current account</span>
+                      <?php elseif ((int) $admin_account['is_active'] === 1): ?>
+                        <form action="admin-content.php" method="post">
+                          <input type="hidden" name="type" value="admin" />
+                          <input type="hidden" name="action" value="revoke" />
+                          <input type="hidden" name="id" value="<?= e($admin_account['id']) ?>" />
+                          <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
+                        </form>
+                      <?php else: ?>
+                        <form action="admin-content.php" method="post">
+                          <input type="hidden" name="type" value="admin" />
+                          <input type="hidden" name="action" value="restore" />
+                          <input type="hidden" name="id" value="<?= e($admin_account['id']) ?>" />
+                          <button class="btn btn-sm btn-outline-secondary" type="submit">Restore</button>
+                        </form>
+                      <?php endif; ?>
                     </div>
                   </td>
                 </tr>
