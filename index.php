@@ -1,7 +1,11 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/content-data.php';
-
+require_once __DIR__ . '/auth.php';
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+bootstrap_admin_session($pdo);
 /*
 |--------------------------------------------------------------------------
 | Optional automatic database setup
@@ -21,6 +25,7 @@ $events = all_events($pdo);
 $projects = all_projects($pdo);
 $committee_members = array_slice(all_committee_members($pdo), 0, 4);
 $avatar_placeholder = 'assets/avatar.jpg';
+
 ?>
 <!doctype html>
 
@@ -54,9 +59,15 @@ $avatar_placeholder = 'assets/avatar.jpg';
           <a class="nav-link-hover" href="#projects">Projects</a>
           <a class="nav-link-hover" href="#committee">Committee</a>
         </div>
-        <a href="login.php" class="join-link">
-          JOIN_SYSTEM
-        </a>
+        <?php if (empty($_SESSION['admin_id'])): ?>
+          <a href="login.php" class="join-link">
+            JOIN_SYSTEM
+          </a>
+        <?php else: ?>
+          <a href="admin-dashboard.php" class="join-link">
+            ADMIN_DASHBOARD
+          </a>
+        <?php endif; ?>
       </nav>
     </header>
     <main>

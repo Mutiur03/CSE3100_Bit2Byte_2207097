@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
@@ -10,13 +11,8 @@ function redirect_with_message($url, $message) {
     exit;
 }
 
-function redirect_logged_in_admin() {
-    if (empty($_COOKIE[session_name()])) {
-        return;
-    }
-
-    session_start();
-    if (!empty($_SESSION['admin_id'])) {
+function redirect_logged_in_admin(PDO $pdo) {
+    if (bootstrap_admin_session($pdo)) {
         header('Location: admin-dashboard.php');
         exit;
     }
@@ -42,14 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($admin && password_verify($password, $admin['password_hash'])) {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-
-        session_regenerate_id(true);
-        $_SESSION['admin_id'] = $admin['id'];
-        $_SESSION['admin_name'] = $admin['name'];
-        $_SESSION['admin_email'] = $admin['email'];
+        $remember_me = !empty($_POST['remember_me']);
+        login_admin($pdo, $admin, $remember_me);
 
         header('Location: admin-dashboard.php');
         exit;
@@ -58,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect_with_message('login.php', 'Invalid credentials.');
 }
 
-redirect_logged_in_admin();
+redirect_logged_in_admin($pdo);
 ?>
 <!doctype html>
 <html lang="en">
@@ -174,8 +164,12 @@ redirect_logged_in_admin();
                 </div>
               </div>
               <div
-                class="form-options d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 gap-sm-0"
+                class="form-options d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 gap-sm-0"
               >
+                <label class="checkbox-group">
+                  <input type="checkbox" name="remember_me" value="1" />
+                  Remember me
+                </label>
                 <span class="checkbox-group">Admin access only</span>
               </div>
               <button type="submit" class="btn-submit">

@@ -1,21 +1,12 @@
 <?php
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/auth.php';
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-if (empty($_COOKIE[session_name()])) {
-    header('Location: login.php?message=' . urlencode('Please login as admin.'));
-    exit;
-}
-
-session_start();
-
-if (empty($_SESSION['admin_id'])) {
-    header('Location: login.php?message=' . urlencode('Please login as admin.'));
-    exit;
-}
+require_admin_login($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: admin-dashboard.php');
